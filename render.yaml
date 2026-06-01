@@ -1,0 +1,25 @@
+# Render Blueprint — deploys a Starter web service with a 1 GB persistent disk
+# for the SQLite database. Connect this repo in the Render dashboard and it picks
+# this up automatically. Starter plan (~$7/mo) is required: the free tier cannot
+# mount a persistent disk.
+services:
+  - type: web
+    name: methodology-analyzer
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    # Single gunicorn worker: SQLite has one writer, and one worker avoids
+    # cross-process lock contention on the WAL file. Plenty for 5-10 users.
+    startCommand: gunicorn -w 1 -b 0.0.0.0:$PORT app:app
+    healthCheckPath: /healthz
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DB_PATH
+        value: /var/data/app.db
+      - key: SECRET_KEY
+        generateValue: true        # Render generates a strong secret
+      - key: ANTHROPIC_API_KEY
+        sync: false                # set manually in the dashboard (used in Weekend 2)

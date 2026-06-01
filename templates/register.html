@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign up · Methodology Analyzer{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Create account</h1>
+  <form method="post" action="{{ url_for('register') }}">
+    <label>Email
+      <input type="email" name="email" required autofocus>
+    </label>
+    <label>Password <span class="muted">(8+ characters)</span>
+      <input type="password" name="password" required minlength="8">
+    </label>
+    <button type="submit">Create account</button>
+  </form>
+  <p class="muted">Already have an account? <a href="{{ url_for('login') }}">Log in</a>.</p>
+</div>
+{% endblock %}

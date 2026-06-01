@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Methodology Analyzer{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Your workspace</h1>
+  <p class="muted">Signed in as <strong>{{ current_user.email }}</strong>. Everything below is private to your account.</p>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Your methodologies</h2>
+    {% if specs %}
+      <ul class="list">
+        {% for s in specs %}
+          <li>{{ s["name"] }} {% if s["is_active"] %}<span class="tag">active</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No methodology defined yet.</p>
+    {% endif %}
+    <p class="soon">Methodology builder &amp; AI analyzer arrive in the next build.</p>
+  </div>
+
+  <div class="card">
+    <h2>Your analyses</h2>
+    {% if sessions %}
+      <ul class="list">
+        {% for a in sessions %}
+          <li>{{ a["title"] or "Untitled" }}
+            {% if a["outcome"] %}<span class="tag">{{ a["outcome"] }}</span>{% endif %}
+            <span class="muted">{{ a["created_at"] }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No analyses yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
