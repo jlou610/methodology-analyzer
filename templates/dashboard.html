@@ -18,7 +18,7 @@
     {% else %}
       <p class="muted">No methodology defined yet.</p>
     {% endif %}
-    <p class="soon">Methodology builder &amp; AI analyzer arrive in the next build.</p>
+    <p style="margin-top:16px"><a class="btn-link" href="{{ url_for('methodology_list') }}">Manage methodologies →</a></p>
   </div>
 
   <div class="card">
@@ -26,8 +26,12 @@
     {% if sessions %}
       <ul class="list">
         {% for a in sessions %}
-          <li>{{ a["title"] or "Untitled" }}
-            {% if a["outcome"] %}<span class="tag">{{ a["outcome"] }}</span>{% endif %}
+          <li><a href="{{ url_for('analysis_detail', session_id=a['id']) }}">{{ a["title"] or "Untitled" }}</a>
+            {% if a["outcome"] %}
+              <span class="tag outcome-{{ a['outcome'] }}">{{ a["outcome"] }}</span>
+            {% else %}
+              <span class="tag outcome-pending">pending</span>
+            {% endif %}
             <span class="muted">{{ a["created_at"] }}</span>
           </li>
         {% endfor %}
@@ -35,6 +39,7 @@
     {% else %}
       <p class="muted">No analyses yet.</p>
     {% endif %}
+    <p style="margin-top:16px"><a class="btn-link" href="{{ url_for('analyze') }}">Run an analysis →</a></p>
   </div>
 </div>
 {% endblock %}

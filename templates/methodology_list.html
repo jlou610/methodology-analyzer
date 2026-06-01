@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Your methodologies · Methodology Analyzer by TraderLeveling{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="row-between">
+    <h1>Your methodologies</h1>
+    <a class="btn" href="{{ url_for('methodology_new') }}">+ New methodology</a>
+  </div>
+  <p class="muted">Define how you trade. The active methodology is the one the analyzer uses.</p>
+</div>
+
+<div class="card">
+  {% if specs %}
+    <table class="tbl">
+      <thead><tr><th>Name</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+      <tbody>
+        {% for s in specs %}
+          <tr>
+            <td>{{ s["name"] }}</td>
+            <td>{% if s["is_active"] %}<span class="tag">active</span>{% else %}<span class="muted">inactive</span>{% endif %}</td>
+            <td class="muted">{{ s["updated_at"] }}</td>
+            <td class="actions">
+              <a href="{{ url_for('methodology_edit', spec_id=s['id']) }}">Edit</a>
+              {% if not s["is_active"] %}
+                <form method="post" action="{{ url_for('methodology_activate', spec_id=s['id']) }}" class="inline">
+                  <button type="submit" class="linklike">Set active</button>
+                </form>
+              {% endif %}
+              <form method="post" action="{{ url_for('methodology_delete', spec_id=s['id']) }}" class="inline"
+                    onsubmit="return confirm('Delete this methodology?');">
+                <button type="submit" class="linklike danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">You haven't defined a methodology yet.</p>
+    <p><a class="btn" href="{{ url_for('methodology_new') }}">Create your first methodology</a></p>
+  {% endif %}
+</div>
+{% endblock %}

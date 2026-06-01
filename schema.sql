@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS analysis_sessions (
     input_json    TEXT NOT NULL,
     output_text   TEXT,
     output_json   TEXT,
-    outcome       TEXT CHECK(outcome IN ('correct','incorrect','partial')),
+    outcome       TEXT CHECK(outcome IN ('correct','incorrect','partial','no-trade')),
     what_happened TEXT,
     created_at    TEXT DEFAULT (datetime('now'))
 );

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Analysis · Methodology Analyzer by TraderLeveling{% endblock %}
+{% set labels = {
+  "CONTEXT_READ": "Context read",
+  "SETUPS_IN_PLAY": "Setups in play",
+  "TOP_READ": "Top read",
+  "RED_FLAGS": "Red flags",
+  "WHAT_WOULD_CHANGE_THIS": "What would change this"
+} %}
+{% block content %}
+
+<div class="card">
+  <div class="row-between">
+    <h1>{{ row["title"] or "Analysis" }}</h1>
+    <a class="btn-link" href="{{ url_for('analyze') }}">+ New analysis</a>
+  </div>
+  <p class="muted">{{ row["created_at"] }} · model {{ model }}</p>
+
+  {% if edge_thesis %}
+    <div class="edge">Edge thesis — {{ edge_thesis }}</div>
+  {% endif %}
+
+  {% if analysis_input.get("observations") %}
+    <details class="obs">
+      <summary>Your input</summary>
+      <p>{{ analysis_input["observations"] }}</p>
+    </details>
+  {% endif %}
+</div>
+
+{% for key in section_order %}
+  <div class="card section">
+    <h2>{{ labels.get(key, key) }}</h2>
+    {% if sections.get(key) %}
+      <p class="sectext">{{ sections[key] }}</p>
+    {% else %}
+      <p class="muted">—</p>
+    {% endif %}
+  </div>
+{% endfor %}
+
+<div class="card meta">
+  {% if grading_scale %}
+    <p class="muted">Graded on this methodology's scale:
+      {% if grading_scale.get("type") == "numeric" %}
+        numeric {{ grading_scale.get("range", "1-10") }}
+      {% else %}
+        {{ grading_scale.get("tiers", []) | join(" › ") }}
+      {% endif %}
+    </p>
+  {% endif %}
+  {% if usage %}
+    <p class="muted small">Prompt cache — write: {{ usage.get("cache_creation_input_tokens", 0) }} tok ·
+      read: {{ usage.get("cache_read_input_tokens", 0) }} tok ·
+      uncached input: {{ usage.get("input_tokens", 0) }} tok ·
+      output: {{ usage.get("output_tokens", 0) }} tok</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <details class="outcome-box" {% if row["outcome"] %}open{% endif %}>
+    <summary>
+      Record outcome
+      {% if row["outcome"] %}
+        <span class="tag outcome-{{ row['outcome'] }}">{{ row["outcome"] }}</span>
+      {% else %}
+        <span class="tag outcome-pending">not recorded</span>
+      {% endif %}
+    </summary>
+    <form method="post" action="{{ url_for('analysis_outcome', session_id=row['id']) }}" class="outcome-form">
+      <label>What actually happened?
+        <textarea name="what_happened" rows="4"
+          placeholder="How did the trade or situation play out?">{{ row["what_happened"] or "" }}</textarea>
+      </label>
+      <fieldset class="outcome-radios">
+        <legend>Outcome</legend>
+        {% for o in outcomes %}
+          <label class="inline-radio">
+            <input type="radio" name="outcome" value="{{ o }}" {% if row["outcome"] == o %}checked{% endif %}> {{ o }}
+          </label>
+        {% endfor %}
+      </fieldset>
+      <button type="submit" class="btn">Save outcome</button>
+    </form>
+  </details>
+</div>
+{% endblock %}

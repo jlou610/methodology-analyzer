@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}New analysis · Methodology Analyzer by TraderLeveling{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="row-between">
+    <h1>New analysis</h1>
+    <span class="allowance {% if remaining == 0 %}empty{% endif %}">{{ used }}/{{ limit }} analyses today</span>
+  </div>
+  {% if spec %}
+    <p class="muted">Running against your active methodology: <strong>{{ spec["name"] }}</strong>.
+      <a href="{{ url_for('methodology_list') }}">Change</a></p>
+  {% else %}
+    <p class="muted">You don't have an active methodology yet.
+      <a href="{{ url_for('methodology_new') }}">Create one</a> to start analyzing.</p>
+  {% endif %}
+</div>
+
+{% if spec and configured is defined and not configured %}
+<div class="card"><div class="flash error" style="margin:0">
+  The analysis service isn't configured on this server yet (missing API key). You can build
+  and edit methodologies, but running an analysis won't work until it's set.
+</div></div>
+{% endif %}
+
+{% if spec %}
+<div class="card">
+  {% if remaining == 0 %}
+    <p class="muted">You've used your {{ limit }} analyses for today. Limit resets at midnight UTC.</p>
+  {% else %}
+    <form method="post" action="{{ url_for('analyze') }}" id="analyzeForm">
+      <label>What are you looking at? <span class="muted">(optional title)</span>
+        <input type="text" name="title" value="{{ title or '' }}" placeholder="e.g. NVDA daily, or ES at PDH">
+      </label>
+      <label>Current situation <span class="req">*</span>
+        <textarea name="observations" rows="6" required
+          placeholder="Describe what you see right now in the terms your methodology uses — trend, key levels, what price is doing, any of your context inputs.">{{ observations or '' }}</textarea>
+      </label>
+      <button type="submit" id="runBtn">Run analysis</button>
+      <p class="muted" id="runningMsg" hidden>Analyzing against your methodology… this takes a few seconds.</p>
+    </form>
+  {% endif %}
+</div>
+<script>
+  const f = document.getElementById('analyzeForm');
+  if (f) f.addEventListener('submit', () => {
+    document.getElementById('runBtn').disabled = true;
+    document.getElementById('runBtn').textContent = 'Analyzing…';
+    document.getElementById('runningMsg').hidden = false;
+  });
+</script>
+{% endif %}
+{% endblock %}

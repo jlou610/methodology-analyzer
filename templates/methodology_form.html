@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if spec_id else "New" }} methodology · Methodology Analyzer by TraderLeveling{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h1>{{ "Edit methodology" if spec_id else "New methodology" }}</h1>
+  <p class="muted">Takes about 15 minutes. Fields marked <span class="req">*</span> are required. Greyed examples show what good looks like.</p>
+</div>
+
+<form id="specForm" data-spec-id="{{ spec_id or '' }}" novalidate>
+
+  <label class="topname">Methodology name <span class="req">*</span>
+    <input type="text" id="mName" placeholder="e.g. Swing breakouts (Maya) / NQ VP intraday">
+  </label>
+
+  <!-- 1. The basics -->
+  <section class="acc open">
+    <button type="button" class="acc-head">1. The basics <span class="acc-state"></span></button>
+    <div class="acc-body">
+      <label>One-line style summary <span class="req">*</span>
+        <input type="text" id="styleSummary" placeholder="I swing-trade leading growth stocks breaking out of bases while the market is in an uptrend.">
+      </label>
+      <label>Your name <span class="muted">(optional — how the analyzer addresses you)</span>
+        <input type="text" id="traderName" placeholder="Maya">
+      </label>
+      <div class="two">
+        <label>Markets <span class="muted">(comma-separated)</span>
+          <input type="text" id="markets" placeholder="US equities">
+        </label>
+        <label>Instruments <span class="muted">(comma-separated)</span>
+          <input type="text" id="instruments" placeholder="shares">
+        </label>
+      </div>
+      <label>Holding style
+        <select id="holdingStyle">
+          <option value="">—</option>
+          <option>intraday</option><option>swing</option>
+          <option>position</option><option>scalp</option>
+        </select>
+      </label>
+      <div class="two">
+        <label>Context timeframes <span class="muted">(higher TF, comma-separated)</span>
+          <input type="text" id="tfContext" placeholder="weekly, daily">
+        </label>
+        <label>Trigger timeframes <span class="muted">(execution TF)</span>
+          <input type="text" id="tfTrigger" placeholder="daily">
+        </label>
+      </div>
+      <label>Workflow <span class="muted">(when you review / execute)</span>
+        <input type="text" id="workflow" placeholder="Review nightly, place orders pre-open.">
+      </label>
+    </div>
+  </section>
+
+  <!-- 2. Edge thesis -->
+  <section class="acc">
+    <button type="button" class="acc-head">2. Why your edge works <span class="muted">(optional)</span><span class="acc-state"></span></button>
+    <div class="acc-body">
+      <p class="muted">One or two sentences on why your methodology works at all. The analyzer leans on this when a setup is ambiguous.</p>
+      <label>Edge thesis
+        <textarea id="edgeThesis" rows="2" placeholder="Leading stocks breaking out of bases on volume reflect institutional accumulation resolving up."></textarea>
+      </label>
+    </div>
+  </section>
+
+  <!-- 3. Context inputs -->
+  <section class="acc">
+    <button type="button" class="acc-head">3. What you look at <span class="acc-state"></span></button>
+    <div class="acc-body">
+      <p class="muted">The facts you read before deciding. Suggested 3–5.</p>
+      <div id="contextInputs"></div>
+      <button type="button" class="btn-sec" data-action="add-context">+ Add input</button>
+    </div>
+  </section>
+
+  <!-- 4. Setups -->
+  <section class="acc">
+    <button type="button" class="acc-head">4. Your setups <span class="req">*</span><span class="acc-state"></span></button>
+    <div class="acc-body">
+      <label>What do you call your supporting conditions?
+        <input type="text" id="confLabel" placeholder="Confluence" value="Confluence">
+      </label>
+      <p class="muted">At least one setup needs a <strong>trigger</strong> and an <strong>invalidation</strong>. Up to 5 setups.</p>
+      <div id="setups"></div>
+      <button type="button" class="btn-sec" data-action="add-setup">+ Add setup</button>
+    </div>
+  </section>
+
+  <!-- 5. Grading & filters -->
+  <section class="acc">
+    <button type="button" class="acc-head">5. How you grade &amp; filter <span class="req">*</span><span class="acc-state"></span></button>
+    <div class="acc-body">
+      <fieldset class="grading">
+        <legend>Your grading scale</legend>
+        <label class="inline-radio"><input type="radio" name="gradingType" value="ordinal" checked> Named tiers</label>
+        <label class="inline-radio"><input type="radio" name="gradingType" value="numeric"> Numeric score</label>
+        <div id="gradeOrdinal">
+          <label>Tiers, best to worst <span class="muted">(comma-separated)</span>
+            <input type="text" id="gradeTiers" placeholder="A, B, C" value="A, B, C">
+          </label>
+        </div>
+        <div id="gradeNumeric" hidden>
+          <label>Scale range
+            <input type="text" id="gradeRange" placeholder="1-10" value="1-10">
+          </label>
+        </div>
+        <label>Notes <span class="muted">(optional)</span>
+          <input type="text" id="gradeNotes" placeholder="e.g. S-tier reserved for textbook setups">
+        </label>
+      </fieldset>
+      <label>What makes a high-conviction read?
+        <textarea id="highConviction" rows="2" placeholder="Confirmed market uptrend + true leader + clean base + breakout on heavy volume + no earnings near."></textarea>
+      </label>
+      <label>What makes a low-conviction / skip?
+        <textarea id="lowSkip" rows="2" placeholder="Choppy market, laggard, late-stage base, or extended entry."></textarea>
+      </label>
+      <p class="muted" style="margin-bottom:6px">Hard filters <span class="req">*</span> — absolute no-go conditions. At least one.</p>
+      <div id="hardFilters"></div>
+      <button type="button" class="btn-sec" data-action="add-hardfilter">+ Add hard filter</button>
+    </div>
+  </section>
+
+  <!-- 6. Risk -->
+  <section class="acc">
+    <button type="button" class="acc-head">6. Risk <span class="muted">(optional — minimal for v1)</span><span class="acc-state"></span></button>
+    <div class="acc-body">
+      <p class="muted">Intentionally light for now. Richer position-sizing / scaling / drawdown rules are a future addition.</p>
+      <div class="two">
+        <label>Risk per trade<input type="text" id="riskPer" placeholder="0.5-1% of account"></label>
+        <label>Max concurrent<input type="text" id="riskMax" placeholder="5 positions"></label>
+      </div>
+      <label>Notes<input type="text" id="riskNotes" placeholder="Pyramid only into winners."></label>
+    </div>
+  </section>
+
+  <div id="formErrors" class="flash error" hidden></div>
+
+  <div class="savebar">
+    <ul class="checklist">
+      <li id="ck-name">Methodology name</li>
+      <li id="ck-summary">Style summary</li>
+      <li id="ck-setup">1 setup with trigger + invalidation</li>
+      <li id="ck-filter">1 hard filter</li>
+    </ul>
+    <button type="submit" id="saveBtn" class="btn" disabled>Save methodology</button>
+  </div>
+</form>
+
+<!-- Repeatable-row templates -->
+<template id="tpl-context">
+  <div class="row context-row">
+    <input type="text" data-f="name" placeholder="Input name (e.g. Relative strength)">
+    <input type="text" data-f="what" placeholder="What it tells you">
+    <button type="button" class="icon" data-action="remove-row" title="Remove">×</button>
+  </div>
+</template>
+
+<template id="tpl-listitem">
+  <div class="row list-item">
+    <input type="text" data-f="text">
+    <button type="button" class="icon" data-action="remove-row" title="Remove">×</button>
+  </div>
+</template>
+
+<template id="tpl-setup">
+  <div class="setup-card">
+    <div class="row-between">
+      <strong class="setup-title">Setup</strong>
+      <button type="button" class="linklike danger" data-action="remove-setup">Remove setup</button>
+    </div>
+    <div class="two">
+      <label>Name<input type="text" data-f="name" placeholder="Base breakout"></label>
+      <label>Direction
+        <select data-f="direction"><option>long</option><option>short</option><option>both</option></select>
+      </label>
+    </div>
+    <label>Thesis<input type="text" data-f="thesis" placeholder="What this play is and why it works"></label>
+    <label>Trigger <span class="req">*</span><input type="text" data-f="trigger" placeholder="The condition/location that puts it in play"></label>
+    <p class="muted sublabel"><span class="conf-label">Confluence</span> — factors that strengthen it</p>
+    <div class="confluence-list"></div>
+    <button type="button" class="btn-sec sm" data-action="add-confluence">+ Add factor</button>
+    <label>Invalidation <span class="req">*</span><input type="text" data-f="invalidation" placeholder="What kills the idea"></label>
+    <p class="muted sublabel">Red flags — conditions to hesitate or pass</p>
+    <div class="redflag-list"></div>
+    <button type="button" class="btn-sec sm" data-action="add-redflag">+ Add red flag</button>
+    <label>Management <span class="muted">(optional)</span><input type="text" data-f="management" placeholder="Stop / target / trail approach"></label>
+  </div>
+</template>
+
+<script id="initial-spec" type="application/json">{{ spec|tojson }}</script>
+<script id="initial-name" type="application/json">{{ name|tojson }}</script>
+<script src="{{ url_for('static', filename='methodology_form.js') }}"></script>
+{% endblock %}
