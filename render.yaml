@@ -10,7 +10,12 @@ services:
     buildCommand: pip install -r requirements.txt
     # Single gunicorn worker: SQLite has one writer, and one worker avoids
     # cross-process lock contention on the WAL file. Plenty for 5-10 users.
-    startCommand: gunicorn -w 1 -b 0.0.0.0:$PORT app:app
+    # --max-requests recycles the worker every ~200 requests (jittered ±50 so a
+    # restart storm can't sync up), returning all heap to the OS. Bounds the slow
+    # time-driven memory creep that was walking a never-recycled worker into the
+    # 512MB ceiling (~2 OOM/day). The jitter desyncs respawns; 200 is well above
+    # normal per-window traffic so recycles are invisible to users.
+    startCommand: gunicorn -w 1 --max-requests 200 --max-requests-jitter 50 -b 0.0.0.0:$PORT app:app
     healthCheckPath: /healthz
     disk:
       name: data
